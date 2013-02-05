@@ -1,0 +1,1 @@
+Game AI tools for a generic game in node.js, including Minimax.
