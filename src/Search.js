@@ -5,20 +5,16 @@
         ----                -----------
         clone()             state
         getStateValue()     number
-        getPlayerNumber()   integer
+        getNextToMove()     integer
         getMoves()          list of moves
-        move(move)          void
+        move(move)          boolean
  */
 function MinimaxID(state) {
     var miliseconds = 3000;
     var timeLimit = miliseconds*1000000;
     var maxDepthLimit = 100;
     var numPlayers = 2;
-    var bestPath = [];
-    for (var playerNumber = 0; playerNumber < numPlayers; playerNumber++) {
-        bestPath.push([]);
-    }
-
+    var bestPath = new Array(numPlayers);
 
     var negInf = -1000000000;
     var posInf = 1000000000;
@@ -51,7 +47,7 @@ function Minimax(bestPath, timeLimit, depthLimit, currentDepth, currentState) {
 
     var alpha = negInf;
 
-    var playerNumber = currentState.getPlayerNumber();
+    var playerNumber = currentState.getNextToMove();
     var moves = currentState.getMoves();
     var bestMove = null;
     var newAlpha = alpha;
