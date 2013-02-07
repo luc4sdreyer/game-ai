@@ -22,13 +22,17 @@ function MinimaxID(state) {
     //var newState = currentState.clone();
     var alpha = 0;
     for (var depthLimit = 2; depthLimit < maxDepthLimit; depthLimit++) {
-        var newState = state.clone();        
-        for (var playerNumber = 0; playerNumber < numPlayers; playerNumber++) {
-            for (var bestMove in bestPath[playerNumber]) {
-                newState.move(bestMove);
-            }
+        // var newState = state.clone();        
+        // for (var playerNumber = 0; playerNumber < numPlayers; playerNumber++) {
+        //     for (var bestMove in bestPath[playerNumber]) {
+        //         newState.move(bestMove);
+        //     }
+        // }
+        bestPath = new Array(numPlayers);
+        alpha = this.Minimax(bestPath, timeLimit, depthLimit, 0, newState))
+        if (alpha instanceof Error) {
+            break;
         }
-        this.Minimax(bestPath, timeLimit, depthLimit, 0, newState))
     }
     return bestPath;
 }
