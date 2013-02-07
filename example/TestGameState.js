@@ -3,7 +3,7 @@ run();
 
 function run() {
 	//test1();
-	test2();
+	test5();
 }
 
 function test1() {
@@ -29,4 +29,53 @@ function test2() {
 	console.log("state: ");
 	console.log(state);
 	console.log(state.printGrid());
+	state.getStateValue();
+}
+
+function test3() {
+	var state = new g.GameState();
+
+	state.grid[5] = [0,0,0,0,0,0,0];
+	state.grid[4] = [0,0,0,0,0,0,0];
+	state.grid[3] = [2,2,0,0,0,2,2];
+	state.grid[2] = [0,0,0,0,0,0,0];
+	state.grid[1] = [0,1,1,1,1,0,0];
+	state.grid[0] = [0,1,1,0,2,0,0];
+
+	//console.log("state: ");
+	//console.log(state);
+	console.log(state.printGrid());
+	state.getStateValue();
+}
+
+function test4() {
+	var state = new g.GameState();
+
+	state.grid[5] = [0,0,1,1,0,0,0];
+	state.grid[4] = [0,1,0,0,0,0,0];
+	state.grid[3] = [1,1,0,1,0,0,0];
+	state.grid[2] = [0,0,0,0,0,0,0];
+	state.grid[1] = [0,1,0,0,0,0,0];
+	state.grid[0] = [0,0,0,0,0,0,0];
+
+	//console.log("state: ");
+	//console.log(state);
+	console.log(state.printGrid());
+	state.getStateValue();
+}
+
+function test5() {
+	var state = new g.GameState();
+
+	state.grid[5] = [0,0,0,0,0,0,0];
+	state.grid[4] = [1,1,1,0,1,1,1];
+	state.grid[3] = [1,1,1,0,1,1,1];
+	state.grid[2] = [0,0,0,0,0,0,0];
+	state.grid[1] = [1,1,1,0,1,1,1];
+	state.grid[0] = [1,1,1,0,1,1,1];
+
+	//console.log("state: ");
+	//console.log(state);
+	console.log(state.printGrid());
+	state.getStateValue();
 }
