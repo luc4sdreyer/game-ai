@@ -1,18 +1,24 @@
 // This function 
 
+function Search() {
+    this.timer = null;
+}
+
 /* state object must support the following functions:
         name                return type
         ----                -----------
         clone()             state
-        getStateValue()     number
+        getHeuristicValue() number
         getNextToMove()     integer
         getMoves()          list of moves
         move(move)          boolean
  */
-function MinimaxID(state) {
-    var miliseconds = 3000;
-    var timeLimit = miliseconds*1000000;
-    var maxDepthLimit = 100;
+
+Search.prototype.MinimaxID = function(state) {
+    this.timer = process.hrtime();
+    var milliseconds = 3000;
+    var timeLimit = milliseconds*1000000;
+    var maxDepthLimit = 40;
     var numPlayers = 2;
     var bestPath = new Array(numPlayers);
 
@@ -22,28 +28,36 @@ function MinimaxID(state) {
     //var newState = currentState.clone();
     var alpha = 0;
     for (var depthLimit = 2; depthLimit < maxDepthLimit; depthLimit++) {
-        // var newState = state.clone();        
+        var newState = state.clone();        
         // for (var playerNumber = 0; playerNumber < numPlayers; playerNumber++) {
         //     for (var bestMove in bestPath[playerNumber]) {
         //         newState.move(bestMove);
         //     }
         // }
-        bestPath = new Array(numPlayers);
-        alpha = this.Minimax(bestPath, timeLimit, depthLimit, 0, newState))
+        bestPath = new Array();
+        for (var i = 0; i < numPlayers; i++) {
+            bestPath.push(new Array(depthLimit));
+        }
+        alpha = this.Minimax(bestPath, timeLimit, depthLimit, 0, newState);
         if (alpha instanceof Error) {
             break;
         }
     }
     return bestPath;
-}
+};
 
-function Minimax(bestPath, timeLimit, depthLimit, currentDepth, currentState) {
-    if (timer[1] - process.hrtime()[1] > timeLimit) {
+Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDepth, currentState) {
+    var diff = process.hrtime(this.timer);
+    if ((diff[0] * 1e9 + diff[1]) > timeLimit) {
         return new Error("Timeout");
     }
+    //console.log("(diff[0] * 1e9 + diff[1]): "+(diff[0] * 1e9 + diff[1]));
+    //console.log("timeLimit: "+timeLimit);
+    //console.log("process.hrtime()[1]: "+process.hrtime()[1]);
+    //console.log("diff: "+(process.hrtime()[1] - this.timer));
 
-    if (len(getMoves(currentState)) === 0 || currentDepth >= depthLimit) {
-        return currentState.getStateValue();
+    if ((currentState.getMoves().length) === 0 || currentDepth >= depthLimit) {
+        return currentState.getHeuristicValue();
     }
 
     var negInf = -1000000000;
@@ -58,15 +72,18 @@ function Minimax(bestPath, timeLimit, depthLimit, currentDepth, currentState) {
     for (var possibleMove in moves) {
         var newState = currentState.clone();
         newState.move(possibleMove);
-        newAlpha = max(alpha, -1*this.Minimax(timeLimit, depthLimit, currentDepth+1, newState))
-        if (newAlpha instanceof Error) {
+        var minimax = this.Minimax(bestPath, timeLimit, depthLimit, currentDepth+1, newState);
+        if (minimax instanceof Error) {
             return new Error("Timeout");
         }
+        newAlpha = Math.max(alpha, -1*minimax);
         if (newAlpha > alpha) {
             bestMove = possibleMove;
         }
         alpha = newAlpha;
     }
-    bestPath[playerNumber].push(bestMove);
+    bestPath[playerNumber][currentDepth] = bestMove;
     return alpha;
-}
+};
+
+module.exports = Search;
