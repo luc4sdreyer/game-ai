@@ -1,3 +1,4 @@
 module.exports = {
-    'Random'            : require('./Random')
+    'Random'            : require('./Random'),
+    'Minimax'           : require('./Minimax')
 };
