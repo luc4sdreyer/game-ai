@@ -16,11 +16,12 @@ function Search() {
 
 Search.prototype.MinimaxID = function(state) {
     this.timer = process.hrtime();
-    var milliseconds = 3000;
+    var milliseconds = 1000;
     var timeLimit = milliseconds*1000000;
     var maxDepthLimit = 40;
     var numPlayers = 2;
-    var bestPath = new Array(numPlayers);
+    var bestPath = new Array();
+    var prevBestPath = new Array();
 
     var negInf = -1000000000;
     var posInf = 1000000000;
@@ -35,15 +36,17 @@ Search.prototype.MinimaxID = function(state) {
         //     }
         // }
         bestPath = new Array();
-        for (var i = 0; i < numPlayers; i++) {
-            bestPath.push(new Array(depthLimit));
-        }
+        //for (var i = 0; i < numPlayers; i++) {
+        //    bestPath.push(new Array(depthLimit));
+        //}
         alpha = this.Minimax(bestPath, timeLimit, depthLimit, 0, newState);
         if (alpha instanceof Error) {
             break;
+        } else {
+            prevBestPath = bestPath;
         }
     }
-    return bestPath;
+    return prevBestPath;
 };
 
 Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDepth, currentState) {
@@ -69,20 +72,30 @@ Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDept
     var moves = currentState.getMoves();
     var bestMove = null;
     var newAlpha = alpha;
+    var bestNewPath = null; 
     for (var possibleMove in moves) {
         var newState = currentState.clone();
         newState.move(possibleMove);
-        var minimax = this.Minimax(bestPath, timeLimit, depthLimit, currentDepth+1, newState);
+        var newPath = new Array();
+        var minimax = this.Minimax(newPath, timeLimit, depthLimit, currentDepth+1, newState);
         if (minimax instanceof Error) {
             return new Error("Timeout");
         }
         newAlpha = Math.max(alpha, -1*minimax);
         if (newAlpha > alpha) {
             bestMove = possibleMove;
+            bestNewPath = newPath;
         }
         alpha = newAlpha;
     }
-    bestPath[playerNumber][currentDepth] = bestMove;
+    var bestMoveArray = [bestMove];
+    bestMoveArray = bestMoveArray.concat(bestNewPath);
+    //console.log("=======================");
+    //console.log("bestNewPath: "+bestNewPath);
+    //console.log("bestPath: "+bestPath);
+    //console.log("bestMoveArray: "+bestMoveArray);
+    bestPath.push.apply(bestPath, bestMoveArray);       //The only one-liner way to concat arrays without creating a new one!
+    //console.log("bestPath push: "+bestPath);
     return alpha;
 };
 
