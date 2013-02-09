@@ -3,7 +3,7 @@ run();
 
 function run() {
     //test1();
-    test5();
+    test6();
 }
 
 function test1() {
@@ -73,6 +73,22 @@ function test5() {
     state.grid[2] = [0,0,0,0,0,0,0];
     state.grid[1] = [1,1,1,0,1,1,1];
     state.grid[0] = [1,1,1,0,1,1,1];
+
+    //console.log("state: ");
+    //console.log(state);
+    console.log(state.printGrid());
+    state.getHeuristicValue();
+}
+
+function test6() {
+    var state = new g.GameState();
+
+    state.grid[5] = [0,0,0,0,0,0,0];
+    state.grid[4] = [0,0,0,0,0,0,0];
+    state.grid[3] = [0,0,0,0,0,0,0];
+    state.grid[2] = [0,0,0,0,0,0,0];
+    state.grid[1] = [2,0,0,0,2,0,2];
+    state.grid[0] = [1,2,2,1,1,1,1];
 
     //console.log("state: ");
     //console.log(state);
