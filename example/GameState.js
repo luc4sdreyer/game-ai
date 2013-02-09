@@ -394,14 +394,16 @@ GameState.prototype.getHeuristicValue = function() {
             score += (singleChain[0][i] - singleChain[1][i])*singleChainValue[i] + (doubleChain[0][i] - doubleChain[1][i])*doubleChainValue[i]
         }
     }
+
+    var print = 0;
+    if (print > 0) {
+        console.log("            0,1,2,3,4");
+        console.log("singleChain:"+singleChain[0]);
+        console.log("singleChain:"+singleChain[1]);
+        console.log("doubleChain:"+doubleChain[0]);
+        console.log("doubleChain:"+doubleChain[1]);
+    }
     return score;
-
-
-    //console.log("            0,1,2,3,4");
-    //console.log("singleChain:"+singleChain[0]);
-    //console.log("singleChain:"+singleChain[1]);
-    //console.log("doubleChain:"+doubleChain[0]);
-    //console.log("doubleChain:"+doubleChain[1]);
 };
 
 module.exports = GameState;
