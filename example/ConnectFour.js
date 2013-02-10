@@ -37,7 +37,7 @@ function gotData(input) {
         switch (numInput) {
         case 1:
             vsBot = true;
-            bot = new b.Minimax();
+            bot = new b.Minimax(false);
             break;
         case 2:
             vsBot = true;
@@ -75,14 +75,10 @@ function gotData(input) {
 }
 
 function doMove(move) { 
-    var negInf = -1000000000;
-    var posInf = 1000000000;
 
     var playerToMoveNow = state.getNextToMove();
     state.move(move);
-    var hValue = state.getHeuristicValue();
-    console.log("hValue: "+hValue);
-    if (hValue <= negInf || hValue >= posInf) {
+    if (state.isGameOver() === true) {
         console.log("==========================");
         console.log("Game over, player "+(playerToMoveNow+1)+" wins!");
         console.log("Final game grid:");

@@ -51,7 +51,7 @@ GameState.prototype.move = function(move) {
             break;
         }
     }
-    if (!moved) {
+    if (moved === false) {
         return false;
     } else {
         this.nextToMove = (this.nextToMove+1) % this.numberOfPlayers;
@@ -74,17 +74,86 @@ GameState.prototype.clone = function() {
     return newGameState;
 };
 
-GameState.prototype.printGrid = function() {
-    var gridString = '';
+GameState.prototype.isPlayerMax = function(playerNumber) {
+    if (playerNumber === 0) {
+        return true;
+    } else {
+        return false;
+    }
+};
 
+GameState.prototype.equals = function(state) {
+    if (state.gridWidth !== this.gridWidth) {
+        return false;
+    }
+    if (state.gridHeight !== this.gridHeight) {
+        return false;
+    }
+    if (state.numberOfPlayers !== this.numberOfPlayers) {
+        return false;
+    }
+    if (state.nextToMove !== this.nextToMove) {
+        return false;
+    }
+
+    var equals = true;
     for (var y = 0; y < this.gridHeight; y++) {
         for (var x = 0; x < this.gridWidth; x++) {
-            gridString += this.grid[this.gridHeight-y-1][x];
+            if (state.grid[y][x] !== this.grid[y][x]) {
+                equals = false;
+            }
+        }
+    }
+    return equals;
+};
+
+GameState.prototype.isGameOver = function() {
+    var negInf = -1000000000;
+    var posInf = 1000000000;
+
+    var hValue = this.getHeuristicValue();
+    if (hValue <= negInf || hValue >= posInf) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+GameState.prototype.printGrid = function() {
+    var gridString = '';
+    for (var x = 0; x < this.gridWidth; x++) {
+        gridString += '|' + x;
+    }
+    gridString += '|\n';
+    for (var x = 0; x < this.gridWidth; x++) {
+        gridString += '##';
+    }
+    gridString += '#\n';
+    for (var y = 0; y < this.gridHeight; y++) {
+        for (var x = 0; x < this.gridWidth; x++) {
+            gridString += '|' + this.grid[this.gridHeight-y-1][x];
             //gridString += '\t';
         }
-        gridString += '\n';
+        gridString += '|\n';
     }
     return gridString;
+};
+
+GameState.prototype.loadFromFile = function(filename) {
+    var fs = require('fs');
+    var array = fs.readFileSync(filename).toString().split("\n");
+    for(var i = 0; i < array.length; i++) {
+        if (i+1 === array.length) {
+            this.nextToMove = parseInt(array[i]);
+        } else {
+            var elements = array[i].split("|");
+            for(var j = 0; j < array.length; j++) {
+                this.grid[array.length-i-2][j] = parseInt(elements[j]);
+            }
+        }
+    }
+    console.log("Loaded gameState:");
+    console.log(this.printGrid());
 };
 
 GameState.prototype.getHeuristicValue = function() {
@@ -92,6 +161,7 @@ GameState.prototype.getHeuristicValue = function() {
     var chainLength = 1;
     var leftOpen = false;
     var rightOpen = false;
+    var zeroChain = [0,0];
     var singleChain = new Array(2);
     singleChain[0] = new Array(5);
     singleChain[1] = new Array(5);
@@ -156,6 +226,8 @@ GameState.prototype.getHeuristicValue = function() {
                             singleChain[this.grid[y][x-1]-1][chainLength]++;
                         if (debug > 0)
                             console.log("\t\t\tif\tC");
+                    } else if (chainLength >= 4) {
+                        zeroChain[this.grid[y][x-1]-1]++;
                     }
                     chainLength = 1;
                     leftOpen = false;
@@ -212,6 +284,8 @@ GameState.prototype.getHeuristicValue = function() {
                             singleChain[this.grid[y-1][x]-1][chainLength]++;
                         if (debug > 0)
                             console.log("\t\t\tif\tC");
+                    } else if (chainLength >= 4) {
+                        zeroChain[this.grid[y-1][x]-1]++;
                     }
                     chainLength = 1;
                     leftOpen = false;
@@ -273,6 +347,8 @@ GameState.prototype.getHeuristicValue = function() {
                         singleChain[this.grid[y+1][x-1]-1][chainLength]++;
                     if (debug > 0)
                         console.log("\t\t\tif\tC");
+                } else if (chainLength >= 4) {
+                    zeroChain[this.grid[y+1][x-1]-1]++;
                 }
                 chainLength = 1;
                 leftOpen = false;
@@ -348,6 +424,8 @@ GameState.prototype.getHeuristicValue = function() {
                         singleChain[this.grid[y-1][x-1]-1][chainLength]++;
                     if (debug > 0)
                         console.log("\t\t\tif\tC");
+                } else if (chainLength >= 4) {
+                    zeroChain[this.grid[y-1][x-1]-1]++;
                 }
                 chainLength = 1;
                 leftOpen = false;
@@ -378,9 +456,12 @@ GameState.prototype.getHeuristicValue = function() {
     var score = 0;
 
     // Check for endgame condition, othwise calculate heuristic value
-    if (singleChain[0][4]+doubleChain[0][4] + singleChain[1][4]+doubleChain[1][4] !== 0) {
+    var fourChains = [0,0];
+    fourChains[0] = singleChain[0][4] + doubleChain[0][4] + zeroChain[0];
+    fourChains[1] = singleChain[1][4] + doubleChain[1][4] + zeroChain[1];
+    if (fourChains[0] + fourChains[1] !== 0) {
         //console.log("H1");
-        if (singleChain[0][4]+doubleChain[0][4] >= singleChain[1][4]+doubleChain[1][4]) {
+        if (fourChains[0] >= fourChains[1]) {
             score = posInf;
         } else {
             score = negInf;
@@ -398,6 +479,8 @@ GameState.prototype.getHeuristicValue = function() {
     var print = 0;
     if (print > 0) {
         console.log("            0,1,2,3,4");
+        console.log("zeroChain          :"+zeroChain[0]);
+        console.log("zeroChain          :"+zeroChain[1]);
         console.log("singleChain:"+singleChain[0]);
         console.log("singleChain:"+singleChain[1]);
         console.log("doubleChain:"+doubleChain[0]);
