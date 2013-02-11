@@ -4,7 +4,7 @@ run();
 function run() {
     //test1();
     //test6();
-    testBots1();
+    testBots2();
 }
 
 function test1() {
@@ -97,14 +97,16 @@ function test6() {
     state.getHeuristicValue();
 }
 
+// Play a tournament between a number of bots
 function testBots1() {
     var b = require('./bots/Bots');
     var state = new g.GameState();
-    bots = [
-        new b.Minimax(true),
-        //new b.Minimax(false)
-        //,new b.Random()
+    var bots = [
+        new b.Minimax(true , null, true, 6),
+        new b.Minimax(false, null, true, 6)
+        ,new b.Random()
         ];
+    var numGames = 10;
     results = new Array(bots.length);
     for (var bot1 = 0; bot1 < bots.length; bot1++) {
         results[bot1] = new Array(bots.length);
@@ -113,35 +115,101 @@ function testBots1() {
         }
     }
 
-    for (var bot1 = 0; bot1 < bots.length; bot1++) {
-        for (var bot2 = 0; bot2 < bots.length /*&& bot1 !== bot2*/; bot2++) {
-            //if (bot2 >= bot1) break;
-            state = new g.GameState();
-            state.loadFromFile("grid.txt");
-            var players = [bots[bot1], bots[bot2]];
-            var playerNum = 0;
-            while (state.isGameOver() !== true) {
-                var move = players[playerNum++].getMove(state);
-                var success = state.move(move);                
-                if (success !== true) {
-                    console.log(players[playerNum-1]+" provided invalid move ("+move+"), game ended");
-                    break;
-                }                
-                console.log(state.printGrid());
-                if (state.isGameOver() === true) {
-                    console.log(players[playerNum-1]+" (player "+playerNum+") wins!");
-                    if (playerNum === 0) {
-                        results[bot1][bot2]++;
-                    } else {
-                        results[bot2][bot1]++;
+    for (var gameNr = 0; gameNr < numGames; gameNr++) {
+        for (var bot1 = 0; bot1 < bots.length; bot1++) {
+            for (var bot2 = 0; bot2 < bots.length; bot2++) {
+                if (bot2 === bot1) continue;
+                //if (bot2 >= bot1) break;
+                state = new g.GameState();
+                //state.loadFromFile("grid.txt");
+                var players = [bots[bot1], bots[bot2]];
+                var playerNum = 0;
+                while (state.isGameOver() !== true) {
+                    var move = players[playerNum++].getMove(state);
+                    var success = state.move(move);                
+                    if (success !== true) {
+                        console.log(players[playerNum-1]+" provided invalid move ("+move+"), game ended");
+                        break;
+                    }                
+                    console.log(state.printGrid());
+                    if (state.isGameOver() === true) {
+                        console.log(players[playerNum-1]+" (player "+playerNum+") wins!");
+                        if ((playerNum === 0) != (bot2 > bot1)) { //Another way to do XOR
+                            results[bot1][bot2]++;
+                        } else {
+                            results[bot2][bot1]++;
+                        }
                     }
+                    playerNum %= 2;
                 }
-                playerNum %= 2;
             }
         }
     }
     for (var bot1 = 0; bot1 < bots.length; bot1++) {
-        console.log(results[bot1]);
+        console.log("bot"+bot1+" : "+String(results[bot1]));
     }
+    
+}
+
+// Play Minimax bot vs Random bot, and test if AlphaBeta pruning vs no pruning always produces the same move
+function testBots2() {
+    var gameAI = require('../src/GameAI')
+    var b = require('./bots/Bots');
+    var state = new g.GameState();
+    var minibots = [
+        [true , null, true, 4],
+        [false, null, true, 4]
+        ];
+
+    var numGames = 50;
+    results = new Array(2);
+    for (var bot1 = 0; bot1 < 2; bot1++) {
+        results[bot1] = 0;
+    }
+
+    for (var gameNr = 0; gameNr < numGames; gameNr++) {
+        if (Math.floor(gameNr/(numGames)*100) % 10 === 0) {
+            console.log(Math.floor(gameNr/(numGames)*100) +"% complete");
+        }
+        state = new g.GameState();
+        var playerNum = 0;
+        while (state.isGameOver() !== true) {
+            var bestPaths = new Array(minibots.length);
+            for (var m = 0; m < minibots.length; m++) {
+                var search = new gameAI.Search();
+                bestPaths[m] = search.MinimaxID(state, minibots[m][0], minibots[m][1], minibots[m][2], minibots[m][3]);
+            }
+            for (var i = 0; i < bestPaths[0].length; i++) {
+                for (var j = 1; j < bestPaths.length; j++) {
+                    if (bestPaths[j][i] !== bestPaths[j-1][i]) {
+                        console.log("Discrepancy found!");
+                        break;
+                    }
+                }                
+            }
+            //console.log(bestPaths[0] +" === "+ bestPaths[1]);
+            var move = bestPaths[0][0];
+            var success = state.move(move);
+            if (success !== true) {
+                console.log(" provided invalid move ("+move+"), game ended");
+                break;
+            } 
+            if (state.isGameOver() === true) {
+                results[0]++;
+            }
+
+            var rBot = new b.Random();
+            move = rBot.getMove(state);
+            success = state.move(move);
+            if (success !== true) {
+                console.log(" provided invalid move ("+move+"), game ended");
+                break;
+            }
+            if (state.isGameOver() === true) {
+                break;
+            }
+        }
+    }
+    console.log("results: "+String(results));
     
 }
