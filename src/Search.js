@@ -14,18 +14,20 @@ function Search() {
         move(move)          boolean
  */
 
-Search.prototype.MinimaxID = function(state, doAlphaBetaPruning) {
+Search.prototype.MinimaxID = function(state, doAlphaBetaPruning, timeLimit, ignoreTimeLimit, maxDepthLimit) {
     this.timer = process.hrtime();
     var doAlphaBetaPruning = typeof doAlphaBetaPruning !== 'undefined' ? doAlphaBetaPruning : true;
+    var timeLimit          = typeof timeLimit          !== 'undefined' ? timeLimit          : 1000;
+    var ignoreTimeLimit    = typeof ignoreTimeLimit    !== 'undefined' ? ignoreTimeLimit    : false;
+    var maxDepthLimit      = typeof maxDepthLimit      !== 'undefined' ? maxDepthLimit      : 6;
 
-    var milliseconds = 500;
-    var timeLimit = milliseconds*1000000;
-    var maxDepthLimit = 40;
-    var ignoreTimeLimit = true;
-    if (ignoreTimeLimit === true) {
+    timeLimit = timeLimit*1000000;
+    if (ignoreTimeLimit === false) {
+        var maxDepthLimit = 100000;
+    } else {
         timeLimit = 10000*1000*1000000;
-        maxDepthLimit = 8;
     }
+
     var numPlayers = 2;
     var bestPath = new Array();
 
@@ -59,7 +61,7 @@ Search.prototype.MinimaxID = function(state, doAlphaBetaPruning) {
             alpha = tempAlpha;
         }
     }
-    console.log("best Alpha: "+alpha);
+    //console.log("best Alpha: "+alpha);
     return bestPath;
 };
 
@@ -151,8 +153,8 @@ Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDept
     var moves = currentState.getMoves();
     var bestMove = null;
     var bestNewPath = null;
-    var localAlpha = alpha;
-    var localBeta = beta;
+    var bestAlpha = negInf;
+    var bestBeta  = posInf;
     for (var i = 0; i < moves.length; i++) {
         var newState = currentState.clone();
         if ((currentState.equals(newState)) !== true) {
@@ -166,7 +168,7 @@ Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDept
         }
         var newPath = new Array();
 
-        var result = this.Minimax(newPath, timeLimit, depthLimit, currentDepth+1, newState, localAlpha, localBeta);
+        var result = this.Minimax(newPath, timeLimit, depthLimit, currentDepth+1, newState, alpha, beta);
         if (result instanceof Error) {
             return new Error("Timeout");
         }
@@ -175,42 +177,40 @@ Search.prototype.Minimax = function(bestPath, timeLimit, depthLimit, currentDept
             bestNewPath = newPath;
         }
         if (maximizing === true) {
-            // Cutoff
-            if (result > alpha) {
+            if (result > bestAlpha) {
+                bestAlpha = result;
                 bestMove = moves[i];
                 bestNewPath = newPath;
             }
-            alpha = Math.max(alpha, result);
-            if (result >= beta) {
-                //console.log("beta cutoff. result:"+result+" beta: "+beta);
-                //return result;
+            // Cutoff
+            if (bestAlpha >= beta) {
+                // No need to update bestMove or bestNewPath because it this part of the tree will be pruned
+                //console.log("Beta cutoff at depth "+currentDepth+": "+bestAlpha+" >= "+beta+"");
+                return bestAlpha;
             }
-            if (alpha > localAlpha) {
-                localAlpha = alpha;
-            }
+            alpha = Math.max(alpha, bestAlpha);
         } else {
-            // Cutoff
-            if (result < beta) {
+            if (result < bestBeta) {
+                bestBeta = result;
                 bestMove = moves[i];
                 bestNewPath = newPath;
             }
-            beta = Math.min(beta, result);
-            if (result <= alpha) {
-                //console.log("alpha cutoff. result:"+result+" alpha: "+alpha);
-                return result;
+            // Cutoff
+            if (bestBeta <= alpha) {
+                // No need to update bestMove or bestNewPath because it this part of the tree will be pruned
+                //console.log("Alpha cutoff at depth "+currentDepth+": "+bestBeta+" <= "+alpha+"");
+                return bestBeta;
             }
-            if (beta < localBeta) {
-                localBeta = beta;
-            }
+            beta = Math.min(beta, bestBeta);
         }
     }
     var bestMoveArray = [bestMove];
     bestMoveArray = bestMoveArray.concat(bestNewPath);
     bestPath.push.apply(bestPath, bestMoveArray);       //The only one-liner way to concat arrays without creating a new one!
     if (maximizing === true) {
-        return alpha;
+        return bestAlpha;
     } else {
-        return beta;
+        return bestBeta;
     }
 };
 //console.log("=======================");
