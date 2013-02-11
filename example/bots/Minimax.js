@@ -1,13 +1,16 @@
 var gameAI = require('../../src/GameAI')
 
-function Minimax(doAlphaBetaPruning) {
-    this.doAlphaBetaPruning = typeof doAlphaBetaPruning !== 'undefined' ? doAlphaBetaPruning : true;
+function Minimax(doAlphaBetaPruning, timeLimit, ignoreTimeLimit, maxDepthLimit) {
+    this.doAlphaBetaPruning = doAlphaBetaPruning;
+    this.timeLimit          = timeLimit;
+    this.ignoreTimeLimit    = ignoreTimeLimit;
+    this.maxDepthLimit      = maxDepthLimit;
 }
 
 Minimax.prototype.getMove = function(state) {
 	var failedMove = false;
 	var search = new gameAI.Search();
-	var bestPath  = search.MinimaxID(state, this.doAlphaBetaPruning);
+	var bestPath  = search.MinimaxID(state, this.doAlphaBetaPruning, this.timeLimit, this.ignoreTimeLimit, this.maxDepthLimit);
     if (!(bestPath instanceof Error)) {
 	    console.log("bestPath: "+bestPath);
 	    var move = parseInt(bestPath[0]);								//Why is parseInt necessary?!
