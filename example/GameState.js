@@ -108,14 +108,19 @@ GameState.prototype.equals = function(state) {
 };
 
 GameState.prototype.isGameOver = function() {
-    var negInf = -1000000000;
-    var posInf = 1000000000;
-
     var hValue = this.getHeuristicValue();
-    if (hValue <= negInf || hValue >= posInf) {
+    if (hValue <= -10000 || hValue >= 10000) {
         return true;
     } else {
-        return false;
+        var isGridFull = true;
+        for (var y = 0; y < this.gridHeight; y++) {
+            for (var x = 0; x < this.gridWidth; x++) {
+                if (this.grid[y][x] === 0) {
+                    isGridFull = false;
+                }
+            }
+        }
+        return isGridFull;
     }
 };
 
@@ -451,8 +456,6 @@ GameState.prototype.getHeuristicValue = function() {
     }
     //console.log(this.printGrid());
 
-    var negInf = -1000000000;
-    var posInf = 1000000000;
     var score = 0;
 
     // Check for endgame condition, othwise calculate heuristic value
@@ -462,9 +465,9 @@ GameState.prototype.getHeuristicValue = function() {
     if (fourChains[0] + fourChains[1] !== 0) {
         //console.log("H1");
         if (fourChains[0] >= fourChains[1]) {
-            score = posInf;
+            score = 10000;
         } else {
-            score = negInf;
+            score = -10000;
         }
     } else {
         //console.log("H2");
