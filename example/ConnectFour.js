@@ -37,7 +37,7 @@ function gotData(input) {
         switch (numInput) {
         case 1:
             vsBot = true;
-            bot = new b.Minimax(false);
+            bot = new b.Minimax(true);
             break;
         case 2:
             vsBot = true;
