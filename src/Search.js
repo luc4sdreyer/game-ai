@@ -36,7 +36,7 @@ Search.prototype.MinimaxID = function(state, doAlphaBetaPruning, timeLimit, igno
 
     //var newState = currentState.clone();
     var alpha = 0;
-    for (var depthLimit = 2; depthLimit <= maxDepthLimit; depthLimit += 2) {
+    for (var depthLimit = 2; depthLimit <= maxDepthLimit; depthLimit += 1) {
         var newState = state.clone();     
         var tempBestPath = new Array();
         var tempAlpha = null;
