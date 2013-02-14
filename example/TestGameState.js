@@ -156,6 +156,7 @@ function testBots1() {
 function testBots2() {
     var depthSearched  = [2,    3,      4,  5,  6];
     var numGamesToPlay = [1500, 200,    20, 4,  1];
+    var numGamesToPlayScalingFactor = 1;
     var averages = [];
     var averagesNormalized = [];
 
@@ -175,7 +176,7 @@ function testBots2() {
             timePerMove.push([]);
         }
 
-        var numGames = numGamesToPlay[d];
+        var numGames = numGamesToPlay[d]*numGamesToPlayScalingFactor;
         results = new Array(2);
         for (var bot1 = 0; bot1 < 2; bot1++) {
             results[bot1] = 0;
@@ -196,7 +197,7 @@ function testBots2() {
                     move = rBot.getMove(state);
                     success = state.move(move);
                     if (success !== true) {
-                        console.log(" provided invalid move ("+move+"), game ended");
+                        console.log(" provided invalid move ("+move+"), game terminated");
                         break;
                     }
                     if (state.isGameOver() === true) {
@@ -259,8 +260,8 @@ function testBots2() {
         console.log("final score for depth "+d+": "+String(results));
     }
     for (var d = 0; d < depthSearched.length; d++) {
-        console.log("Depth = "+depthSearched[d]+": abs time avg (us): "+String(averages[d]));
-        console.log("Depth = "+depthSearched[d]+": time avg increase: "+String(averagesNormalized[d]));
+        console.log("Depth = "+depthSearched[d]+":\tabs time avg (us): "+String(averages[d]));
+        console.log("\t\ttime avg increase: "+String(averagesNormalized[d]));
     }
     
 }
